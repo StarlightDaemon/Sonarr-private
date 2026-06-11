@@ -201,6 +201,20 @@ namespace NzbDrone.Core.Parser
                 new Regex(@"^(?<title>.+?)(?:[-_\W](?<![()\[!]))+S(?<season>(?<!\d+)(?:\d{2})(?!\d+))(?:\.)(?<episode>\d{2,3}(?!\d+))(?:[-_. ]|$)",
                     RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
+                // Complete series pack identified by the French scene INTEGRAL keyword, no explicit season numbers
+                // (Series.Title.INTEGRAL.FRENCH.1080p, Série.Intégrale.VOSTFR.1080p)
+                // Negative lookbehind keeps releases with an explicit season token before the keyword
+                // (Show.S05.INTEGRALE, Show.S01-S09.INTEGRAL) flowing to the season patterns instead
+                new Regex(@"^(?<title>.+?)[-_. ]+(?<![-_. ](?:S|Season[-_. ]?|Saison[-_. ]?|Series[-_. ]?|Stagione[-_. ]?)\d{1,4}[-_. ]+)(?<completeseries>INT[ÉE]GRALE?)(?:[-_. ]|$)",
+                    RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
+                // Complete series pack identified by keyword only, no explicit season numbers
+                // (Complete Series, Complete Collection, The Complete Series, Complete Season)
+                // Negative lookbehind/lookahead keep releases with explicit season numbers around the keyword
+                // (Series Title Complete Series S01 S04, Show.S01.Complete.Series) flowing to the season patterns
+                new Regex(@"^(?<title>.+?)[-_. ]+(?<![-_. ](?:S|Season[-_. ]?|Saison[-_. ]?|Series[-_. ]?|Stagione[-_. ]?)\d{1,4}[-_. ]+)(?:The[-_. ])?(?<completeseries>Complete[-_. ](?:Series|Collection|Season))(?![-_. ]+(?:S?\d{1,2}(?!\d)|Season|Saison))(?:[-_. ]|$)",
+                    RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
                 // Multi-season pack
                 new Regex(@"^(?<title>.+?)(Complete Series)?[-_. ]+(?:S|(?:Season|Saison|Series|Stagione)[_. ])(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))(?:[-_. ]{1}|[-_. ]{3})(?:S|(?:Season|Saison|Series|Stagione)[_. ])?(?<season>(?<!\d+)(?:\d{1,2})(?!\d+))",
                     RegexOptions.IgnoreCase | RegexOptions.Compiled),
@@ -1062,12 +1076,27 @@ namespace NzbDrone.Core.Parser
                 if (seasons.Distinct().Count() > 1)
                 {
                     result.IsMultiSeason = true;
+
+                    // A multi-season range (S01-S09) is expanded to the full inclusive list of seasons
+                    var orderedSeasons = seasons.Distinct().OrderBy(s => s).ToList();
+                    result.SeasonNumbers = Enumerable.Range(orderedSeasons.First(), orderedSeasons.Last() - orderedSeasons.First() + 1).ToArray();
                 }
 
                 if (seasons.Any())
                 {
                     // If at least one season was parsed use the first season as the season
                     result.SeasonNumber = seasons.First();
+                }
+                else if (matchCollection[0].Groups["completeseries"].Success)
+                {
+                    // Complete-series keyword with no explicit season numbers (Complete Series, INTEGRAL, ...).
+                    // SeasonNumber is 1, not 0, because 0 would misclassify the release as a possible
+                    // special and break scene-mapping lookups. SeasonNumbers stays empty — the concrete
+                    // seasons are resolved against the series when the release is mapped.
+                    result.SeasonNumber = 1;
+                    result.FullSeason = true;
+                    result.IsMultiSeason = true;
+                    result.IsCompleteSeries = true;
                 }
                 else if (!result.AbsoluteEpisodeNumbers.Any() && result.EpisodeNumbers.Any())
                 {

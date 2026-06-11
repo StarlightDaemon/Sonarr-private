@@ -477,6 +477,23 @@ function MediaManagement() {
                         />
                       </FormGroup>
                     )}
+
+                    <FormGroup
+                      advancedSettings={showAdvancedSettings}
+                      isAdvanced={true}
+                      size={sizes.MEDIUM}
+                    >
+                      <FormLabel>
+                        {translate('AllowMultiSeasonPacksLabel')}
+                      </FormLabel>
+                      <FormInputGroup
+                        type={inputTypes.CHECK}
+                        name="allowMultiSeasonPacks"
+                        helpText={translate('AllowMultiSeasonPacksHelpText')}
+                        onChange={handleInputChange}
+                        {...settings.allowMultiSeasonPacks}
+                      />
+                    </FormGroup>
                   </>
                 )}
               </FieldSet>

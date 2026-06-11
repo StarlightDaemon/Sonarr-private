@@ -1,3 +1,4 @@
+using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
 using NzbDrone.Core.Test.Framework;
@@ -98,15 +99,15 @@ namespace NzbDrone.Core.Test.ParserTests
             result.SeasonPart.Should().Be(seasonPart);
         }
 
-        [TestCase("The Series S01-05 WS BDRip X264-REWARD-No Rars", "The Series", 1)]
-        [TestCase("Series.Title.S01-S09.1080p.AMZN.WEB-DL.DDP2.0.H.264-NTb", "Series Title", 1)]
-        [TestCase("Series Title S01 - S07 BluRay 1080p x264 REPACK -SacReD", "Series Title", 1)]
-        [TestCase("Series Title Season 01-07 BluRay 1080p x264 REPACK -SacReD", "Series Title", 1)]
-        [TestCase("Series Title Season 01 - Season 07 BluRay 1080p x264 REPACK -SacReD", "Series Title", 1)]
-        [TestCase("Series Title Complete Series S01 S04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1)]
-        [TestCase("Series Title S01 S04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1)]
-        [TestCase("Series Title S01 04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1)]
-        public void should_parse_multi_season_release(string postTitle, string title, int firstSeason)
+        [TestCase("The Series S01-05 WS BDRip X264-REWARD-No Rars", "The Series", 1, 5)]
+        [TestCase("Series.Title.S01-S09.1080p.AMZN.WEB-DL.DDP2.0.H.264-NTb", "Series Title", 1, 9)]
+        [TestCase("Series Title S01 - S07 BluRay 1080p x264 REPACK -SacReD", "Series Title", 1, 7)]
+        [TestCase("Series Title Season 01-07 BluRay 1080p x264 REPACK -SacReD", "Series Title", 1, 7)]
+        [TestCase("Series Title Season 01 - Season 07 BluRay 1080p x264 REPACK -SacReD", "Series Title", 1, 7)]
+        [TestCase("Series Title Complete Series S01 S04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1, 4)]
+        [TestCase("Series Title S01 S04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1, 4)]
+        [TestCase("Series Title S01 04 (1080p BluRay x265 HEVC 10bit AAC 5.1 Vyndros)", "Series Title", 1, 4)]
+        public void should_parse_multi_season_release(string postTitle, string title, int firstSeason, int lastSeason)
         {
             var result = Parser.Parser.ParseTitle(postTitle);
             result.SeasonNumber.Should().Be(firstSeason);
@@ -116,6 +117,66 @@ namespace NzbDrone.Core.Test.ParserTests
             result.FullSeason.Should().BeTrue();
             result.IsPartialSeason.Should().BeFalse();
             result.IsMultiSeason.Should().BeTrue();
+            result.SeasonNumbers.Should().NotBeEmpty();
+            result.SeasonNumbers.Should().Equal(Enumerable.Range(firstSeason, lastSeason - firstSeason + 1));
+            result.IsCompleteSeries.Should().BeFalse();
+        }
+
+        [TestCase("Series.Title.INTEGRAL.FRENCH.1080p.BluRay.x264-GRP", "Series Title")]
+        [TestCase("Série.Intégrale.VOSTFR.1080p.WEB-DL-GRP", "Série")]
+        [TestCase("Series.Title.Integrale.FRENCH.720p-GRP", "Series Title")]
+        public void should_parse_integral_as_complete_series(string postTitle, string title)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.SeriesTitle.Should().Be(title);
+            result.EpisodeNumbers.Should().BeEmpty();
+            result.AbsoluteEpisodeNumbers.Should().BeEmpty();
+            result.FullSeason.Should().BeTrue();
+            result.IsMultiSeason.Should().BeTrue();
+            result.IsCompleteSeries.Should().BeTrue();
+            result.SeasonNumber.Should().Be(1);
+            result.SeasonNumbers.Should().BeEmpty();
+        }
+
+        [TestCase("Series Title Complete Series (1080p BluRay x265 HEVC 10bit AAC 5.1)", "Series Title")]
+        [TestCase("Series.Title.The.Complete.Series.1080p.WEB-DL.DD5.1.H.264-GRP", "Series Title")]
+        [TestCase("Series.Title.Complete.Collection.2160p.WEB-DL.DDP5.1-GRP", "Series Title")]
+        [TestCase("Series.Title.Complete.Season.1080p.WEB-DL-GRP", "Series Title")]
+        public void should_parse_standalone_complete_series(string postTitle, string title)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.SeriesTitle.Should().Be(title);
+            result.EpisodeNumbers.Should().BeEmpty();
+            result.AbsoluteEpisodeNumbers.Should().BeEmpty();
+            result.FullSeason.Should().BeTrue();
+            result.IsMultiSeason.Should().BeTrue();
+            result.IsCompleteSeries.Should().BeTrue();
+            result.SeasonNumber.Should().Be(1);
+            result.SeasonNumbers.Should().BeEmpty();
+        }
+
+        [TestCase("Series.Title.S01.Complete.1080p.WEB-DL.x264-GRP", "Series Title", 1)]
+        [TestCase("Series.Title.S05.Complete.720p.BluRay.x264-GRP", "Series Title", 5)]
+        [TestCase("Series.Title.S05.INTEGRALE.FRENCH.1080p.BluRay-GRP", "Series Title", 5)]
+        public void should_parse_single_season_with_complete_suffix_as_plain_full_season(string postTitle, string title, int season)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.SeriesTitle.Should().Be(title);
+            result.SeasonNumber.Should().Be(season);
+            result.FullSeason.Should().BeTrue();
+            result.IsMultiSeason.Should().BeFalse();
+            result.IsCompleteSeries.Should().BeFalse();
+            result.SeasonNumbers.Should().BeEmpty();
+        }
+
+        [TestCase("Series Title Complete Season 1 (1080p BluRay x265)", "Series Title Complete", 1)]
+        public void should_not_treat_complete_season_with_explicit_number_as_complete_series(string postTitle, string title, int season)
+        {
+            var result = Parser.Parser.ParseTitle(postTitle);
+            result.SeriesTitle.Should().Be(title);
+            result.SeasonNumber.Should().Be(season);
+            result.IsCompleteSeries.Should().BeFalse();
+            result.IsMultiSeason.Should().BeFalse();
         }
 
         [Test]

@@ -280,6 +280,12 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("SeasonPackUpgradeThreshold", value); }
         }
 
+        public bool AllowMultiSeasonPacks
+        {
+            get { return GetValueBoolean("AllowMultiSeasonPacks", false); }
+            set { SetValue("AllowMultiSeasonPacks", value); }
+        }
+
         public bool SetPermissionsLinux
         {
             get { return GetValueBoolean("SetPermissionsLinux", false); }

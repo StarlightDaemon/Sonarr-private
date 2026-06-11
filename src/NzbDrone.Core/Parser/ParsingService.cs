@@ -260,18 +260,32 @@ namespace NzbDrone.Core.Parser
         {
             if (parsedEpisodeInfo.FullSeason)
             {
-                if (series.UseSceneNumbering && sceneSource)
+                if (parsedEpisodeInfo.IsCompleteSeries)
                 {
-                    var episodes = _episodeService.GetEpisodesBySceneSeason(series.Id, mappedSeasonNumber);
-
-                    // If episodes were found by the scene season number return them, otherwise fallback to look-up by season number
-                    if (episodes.Any())
-                    {
-                        return episodes;
-                    }
+                    // Complete-series pack: every non-special season of the series. Specials are
+                    // excluded because complete-series releases rarely carry them and counting
+                    // never-released specials would inflate the expected episode count downstream.
+                    return _episodeService.GetEpisodeBySeries(series.Id)
+                                          .Where(e => e.SeasonNumber > 0)
+                                          .ToList();
                 }
 
-                return _episodeService.GetEpisodesBySeason(series.Id, mappedSeasonNumber);
+                // Old pending releases may deserialize SeasonNumbers as null
+                var seasonNumbers = parsedEpisodeInfo.SeasonNumbers ?? Array.Empty<int>();
+
+                if (seasonNumbers.Length > 1)
+                {
+                    var multiSeasonEpisodes = new List<Episode>();
+
+                    foreach (var seasonNumber in seasonNumbers)
+                    {
+                        multiSeasonEpisodes.AddRange(GetEpisodesBySingleSeason(series, seasonNumber, sceneSource));
+                    }
+
+                    return multiSeasonEpisodes;
+                }
+
+                return GetEpisodesBySingleSeason(series, mappedSeasonNumber, sceneSource);
             }
 
             if (parsedEpisodeInfo.IsDaily)
@@ -308,6 +322,22 @@ namespace NzbDrone.Core.Parser
             }
 
             return GetStandardEpisodes(series, parsedEpisodeInfo, mappedSeasonNumber, sceneSource, searchCriteria);
+        }
+
+        private List<Episode> GetEpisodesBySingleSeason(Series series, int seasonNumber, bool sceneSource)
+        {
+            if (series.UseSceneNumbering && sceneSource)
+            {
+                var episodes = _episodeService.GetEpisodesBySceneSeason(series.Id, seasonNumber);
+
+                // If episodes were found by the scene season number return them, otherwise fallback to look-up by season number
+                if (episodes.Any())
+                {
+                    return episodes;
+                }
+            }
+
+            return _episodeService.GetEpisodesBySeason(series.Id, seasonNumber);
         }
 
         public ParsedEpisodeInfo ParseSpecialEpisodeTitle(ParsedEpisodeInfo parsedEpisodeInfo, string releaseTitle, int tvdbId, int tvRageId, string imdbId, SearchCriteriaBase searchCriteria = null)

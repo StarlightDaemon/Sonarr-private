@@ -27,6 +27,9 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("Series S02E09 HDTV x264-2HD [eztv]-[rarbg.com]", "series")]
         [TestCase("Series.911.S01.DVDRip.DD2.0.x264-DEEP", "series 911")]
         [TestCase("www.Torrenting.org - Series.S03E14.720p.HDTV.X264-DIMENSION", "series")]
+        [TestCase("Series.Title.INTEGRAL.FRENCH.1080p.BluRay.x264-GRP", "seriestitle")]
+        [TestCase("Series.Title.Complete.Collection.2160p.WEB-DL", "seriestitle")]
+        [TestCase("Series Title Complete Series (1080p BluRay x265)", "seriestitle")]
         public void should_parse_series_name(string postTitle, string title)
         {
             var result = Parser.Parser.ParseSeriesName(postTitle).CleanSeriesTitle();

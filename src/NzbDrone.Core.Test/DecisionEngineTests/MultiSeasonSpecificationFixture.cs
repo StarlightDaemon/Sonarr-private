@@ -3,6 +3,7 @@ using System.Linq;
 using FizzWare.NBuilder;
 using FluentAssertions;
 using NUnit.Framework;
+using NzbDrone.Core.Configuration;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Test.Framework;
@@ -50,6 +51,32 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
         public void should_return_false_if_is_a_multi_season_release()
         {
             Subject.IsSatisfiedBy(_remoteEpisode, new()).Accepted.Should().BeFalse();
+        }
+
+        [Test]
+        public void should_return_false_if_is_a_multi_season_release_and_multi_season_packs_are_not_allowed()
+        {
+            Mocker.GetMock<IConfigService>().Setup(s => s.AllowMultiSeasonPacks).Returns(false);
+
+            Subject.IsSatisfiedBy(_remoteEpisode, new()).Accepted.Should().BeFalse();
+        }
+
+        [Test]
+        public void should_return_true_if_is_a_multi_season_release_and_multi_season_packs_are_allowed()
+        {
+            Mocker.GetMock<IConfigService>().Setup(s => s.AllowMultiSeasonPacks).Returns(true);
+
+            Subject.IsSatisfiedBy(_remoteEpisode, new()).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_return_true_for_complete_series_release_when_multi_season_packs_are_allowed()
+        {
+            Mocker.GetMock<IConfigService>().Setup(s => s.AllowMultiSeasonPacks).Returns(true);
+
+            _remoteEpisode.ParsedEpisodeInfo.IsCompleteSeries = true;
+
+            Subject.IsSatisfiedBy(_remoteEpisode, new()).Accepted.Should().BeTrue();
         }
     }
 }

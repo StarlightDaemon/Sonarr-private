@@ -2,7 +2,6 @@ using System.Linq;
 using NLog;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.CustomFormats;
-using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Parser.Model;
 
 namespace NzbDrone.Core.DecisionEngine.Specifications
@@ -91,26 +90,8 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
                 var seasonPackUpgrade = _configService.SeasonPackUpgrade;
                 var seasonPackUpgradeThreshold = _configService.SeasonPackUpgradeThreshold;
                 _logger.Debug("Total upgradable episodes: {0} out of {1}. Season import setting: {2}, Threshold: {3}%", upgradedCount, totalEpisodesInPack, seasonPackUpgrade, seasonPackUpgradeThreshold);
-                var upgradablePercentage = (double)upgradedCount / totalEpisodesInPack * 100;
-                if (seasonPackUpgrade == SeasonPackUpgradeType.Any)
-                {
-                    if (upgradedCount > 0)
-                    {
-                        return DownloadSpecDecision.Accept();
-                    }
-                }
-                else
-                {
-                    var threshold = seasonPackUpgrade == SeasonPackUpgradeType.All
-                        ? 100.0
-                        : _configService.SeasonPackUpgradeThreshold;
-                    if (upgradablePercentage >= threshold)
-                    {
-                        return DownloadSpecDecision.Accept();
-                    }
-                }
 
-                return DownloadSpecDecision.Reject(DownloadRejectionReason.DiskNotUpgrade, $"Season pack does not meet the upgrade criteria. Upgradable: {upgradedCount}/{totalEpisodesInPack} ({upgradablePercentage:0.##}%), Mode: {seasonPackUpgrade}, Threshold: {seasonPackUpgradeThreshold}%");
+                return SeasonPackUpgradeDecider.Decide(upgradedCount, totalEpisodesInPack, seasonPackUpgrade, seasonPackUpgradeThreshold, DownloadRejectionReason.DiskNotUpgrade);
             }
 
             foreach (var file in subject.Episodes.Where(c => c.EpisodeFileId != 0).Select(c => c.EpisodeFile.Value))

@@ -47,6 +47,12 @@ namespace NzbDrone.Core.Configuration
         SeasonPackUpgradeType SeasonPackUpgrade { get; set; }
         double SeasonPackUpgradeThreshold { get; set; }
 
+        /// <summary>
+        /// Allow grabbing and importing releases that span multiple seasons (e.g. S01-S09, Complete Series).
+        /// When false (default) multi-season releases are always rejected, preserving pre-existing behavior.
+        /// </summary>
+        bool AllowMultiSeasonPacks { get; set; }
+
         // Permissions (Media Management)
         bool SetPermissionsLinux { get; set; }
         string ChmodFolder { get; set; }
