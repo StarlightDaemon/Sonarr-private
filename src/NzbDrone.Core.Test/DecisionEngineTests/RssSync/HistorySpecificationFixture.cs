@@ -12,6 +12,7 @@ using NzbDrone.Core.DecisionEngine.Specifications.RssSync;
 using NzbDrone.Core.History;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Languages;
+using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Qualities;
 using NzbDrone.Core.Qualities;
@@ -235,6 +236,92 @@ namespace NzbDrone.Core.Test.DecisionEngineTests.RssSync
             GivenCdhDisabled();
             GivenMostRecentForEpisode(FIRST_EPISODE_ID, "test", _notupgradableQuality, DateTime.UtcNow.AddDays(-100), EpisodeHistoryEventType.Grabbed);
             _upgradeHistory.IsSatisfiedBy(_parseResultSingle, new()).Accepted.Should().BeFalse();
+        }
+
+        private void GivenSeasonPack(SeasonPackUpgradeType mode, double threshold = 100.0)
+        {
+            _parseResultMulti.ParsedEpisodeInfo.FullSeason = true;
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.SeasonPackUpgrade)
+                  .Returns(mode);
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.SeasonPackUpgradeThreshold)
+                  .Returns(threshold);
+        }
+
+        [Test]
+        public void should_accept_season_pack_when_no_episode_has_blocking_history()
+        {
+            GivenSeasonPack(SeasonPackUpgradeType.All);
+
+            Mocker.GetMock<IHistoryService>().Setup(s => s.MostRecentForEpisode(It.IsAny<int>())).Returns((EpisodeHistory)null);
+
+            _upgradeHistory.IsSatisfiedBy(_parseResultMulti, new()).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_reject_season_pack_with_history_not_upgrade_reason_when_mode_is_all_and_one_episode_is_blocked()
+        {
+            GivenSeasonPack(SeasonPackUpgradeType.All);
+
+            GivenMostRecentForEpisode(FIRST_EPISODE_ID, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+
+            var decision = _upgradeHistory.IsSatisfiedBy(_parseResultMulti, new());
+
+            decision.Accepted.Should().BeFalse();
+            decision.Reason.Should().Be(DownloadRejectionReason.HistoryNotUpgrade);
+        }
+
+        [Test]
+        public void should_accept_season_pack_when_mode_is_any_and_one_episode_is_blocked()
+        {
+            GivenSeasonPack(SeasonPackUpgradeType.Any);
+
+            GivenMostRecentForEpisode(FIRST_EPISODE_ID, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+
+            _upgradeHistory.IsSatisfiedBy(_parseResultMulti, new()).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_reject_season_pack_when_mode_is_any_and_all_episodes_are_blocked()
+        {
+            GivenSeasonPack(SeasonPackUpgradeType.Any);
+
+            GivenMostRecentForEpisode(FIRST_EPISODE_ID, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+            GivenMostRecentForEpisode(SECOND_EPISODE_ID, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+            GivenMostRecentForEpisode(3, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+
+            var decision = _upgradeHistory.IsSatisfiedBy(_parseResultMulti, new());
+
+            decision.Accepted.Should().BeFalse();
+            decision.Reason.Should().Be(DownloadRejectionReason.HistoryNotUpgrade);
+        }
+
+        [Test]
+        public void should_accept_season_pack_when_mode_is_threshold_and_upgradable_percentage_meets_threshold()
+        {
+            GivenSeasonPack(SeasonPackUpgradeType.Threshold, 50.0);
+
+            // 1 of 3 episodes blocked -> 66.67% upgradable >= 50%
+            GivenMostRecentForEpisode(FIRST_EPISODE_ID, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+
+            _upgradeHistory.IsSatisfiedBy(_parseResultMulti, new()).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_reject_season_pack_when_mode_is_threshold_and_upgradable_percentage_is_below_threshold()
+        {
+            GivenSeasonPack(SeasonPackUpgradeType.Threshold, 80.0);
+
+            // 1 of 3 episodes blocked -> 66.67% upgradable < 80%
+            GivenMostRecentForEpisode(FIRST_EPISODE_ID, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+
+            var decision = _upgradeHistory.IsSatisfiedBy(_parseResultMulti, new());
+
+            decision.Accepted.Should().BeFalse();
+            decision.Reason.Should().Be(DownloadRejectionReason.HistoryNotUpgrade);
         }
     }
 }

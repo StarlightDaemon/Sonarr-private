@@ -55,6 +55,46 @@ namespace NzbDrone.Core.Test.MediaFiles.EpisodeImport.Aggregation.Aggregators
         }
 
         [Test]
+        public void should_use_file_info_when_folder_is_multi_season_pack()
+        {
+            // A file inside a multi-season pack folder (S01-S09) must resolve episodes from its own
+            // name so each file imports into its correct season
+            var fileEpisodeInfo = Parser.Parser.ParseTitle("Series.Title.S02E03");
+            var folderEpisodeInfo = Parser.Parser.ParseTitle("Series.Title.S01-S09.1080p.WEB-DL");
+            var localEpisode = new LocalEpisode
+            {
+                FileEpisodeInfo = fileEpisodeInfo,
+                FolderEpisodeInfo = folderEpisodeInfo,
+                Path = @"C:\Test\Unsorted TV\Series.Title.S01-S09.1080p.WEB-DL\Series.Title.S02E03.mkv".AsOsAgnostic(),
+                Series = _series
+            };
+
+            Subject.Aggregate(localEpisode, null);
+
+            Mocker.GetMock<IParsingService>()
+                  .Verify(v => v.GetEpisodes(fileEpisodeInfo, _series, localEpisode.SceneSource, null), Times.Once());
+        }
+
+        [Test]
+        public void should_use_file_info_when_download_client_item_is_multi_season_pack()
+        {
+            var fileEpisodeInfo = Parser.Parser.ParseTitle("Series.Title.S05E07");
+            var downloadClientEpisodeInfo = Parser.Parser.ParseTitle("Series Title Complete Series (1080p BluRay x265)");
+            var localEpisode = new LocalEpisode
+            {
+                FileEpisodeInfo = fileEpisodeInfo,
+                DownloadClientEpisodeInfo = downloadClientEpisodeInfo,
+                Path = @"C:\Test\Unsorted TV\Series.Title.Complete\Series.Title.S05E07.mkv".AsOsAgnostic(),
+                Series = _series
+            };
+
+            Subject.Aggregate(localEpisode, null);
+
+            Mocker.GetMock<IParsingService>()
+                  .Verify(v => v.GetEpisodes(fileEpisodeInfo, _series, localEpisode.SceneSource, null), Times.Once());
+        }
+
+        [Test]
         public void should_not_use_folder_when_it_contains_more_than_one_valid_video_file()
         {
             var fileEpisodeInfo = Parser.Parser.ParseTitle("Series.Title.S01E01");

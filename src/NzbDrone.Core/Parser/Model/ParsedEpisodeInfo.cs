@@ -22,6 +22,22 @@ namespace NzbDrone.Core.Parser.Model
         public bool FullSeason { get; set; }
         public bool IsPartialSeason { get; set; }
         public bool IsMultiSeason { get; set; }
+
+        /// <summary>
+        /// All season numbers covered by a multi-season release (e.g. S01-S09 => [1..9]).
+        /// Empty for single-season releases and for complete-series releases without an
+        /// explicit season range. May deserialize as null from JSON persisted before this
+        /// field existed (pending releases) — consumers must null-guard.
+        /// </summary>
+        public int[] SeasonNumbers { get; set; }
+
+        /// <summary>
+        /// True when the release is a complete-series pack identified by keyword
+        /// (Complete Series, INTEGRAL, Intégrale, ...) rather than an explicit season range.
+        /// Implies all non-special seasons of the series. Defaults to false for JSON
+        /// persisted before this field existed.
+        /// </summary>
+        public bool IsCompleteSeries { get; set; }
         public bool IsSeasonExtra { get; set; }
         public bool IsSplitEpisode { get; set; }
         public bool IsMiniSeries { get; set; }
@@ -37,6 +53,7 @@ namespace NzbDrone.Core.Parser.Model
             EpisodeNumbers = Array.Empty<int>();
             AbsoluteEpisodeNumbers = Array.Empty<int>();
             SpecialAbsoluteEpisodeNumbers = Array.Empty<decimal>();
+            SeasonNumbers = Array.Empty<int>();
             Languages = new List<Language>();
         }
 

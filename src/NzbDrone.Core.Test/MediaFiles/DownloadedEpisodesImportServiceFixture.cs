@@ -526,6 +526,40 @@ namespace NzbDrone.Core.Test.MediaFiles
             VerifyNoImport();
         }
 
+        [Test]
+        public void should_process_multi_season_download_when_multi_season_packs_are_allowed()
+        {
+            GivenValidSeries();
+
+            Mocker.GetMock<NzbDrone.Core.Configuration.IConfigService>()
+                  .SetupGet(s => s.AllowMultiSeasonPacks)
+                  .Returns(true);
+
+            _trackedDownload.DownloadItem.Title = "Series Title S01-S11";
+
+            var folderName = @"C:\media\ba09030e-1234-1234-1234-123456789abc\Series.Title.S01-S11.1080p.WEB-DL".AsOsAgnostic();
+
+            Mocker.GetMock<IDiskProvider>().Setup(c => c.FolderExists(folderName))
+                .Returns(true);
+
+            Mocker.GetMock<IMakeImportDecision>()
+                .Setup(s => s.GetImportDecisions(It.IsAny<List<string>>(), It.IsAny<Series>(), It.IsAny<DownloadClientItem>(), It.IsAny<ParsedEpisodeInfo>(), It.IsAny<ParsedEpisodeInfo>(), true))
+                .Returns(new List<ImportDecision>());
+
+            Mocker.GetMock<IImportApprovedEpisodes>()
+                .Setup(s => s.Import(It.IsAny<List<ImportDecision>>(), It.IsAny<bool>(), It.IsAny<DownloadClientItem>(), It.IsAny<ImportMode>()))
+                .Returns(new List<ImportResult>());
+
+            var result = Subject.ProcessPath(folderName, ImportMode.Auto, _trackedDownload.RemoteEpisode.Series, _trackedDownload.DownloadItem);
+
+            result.Should().NotContain(r => r.ImportDecision != null &&
+                                            r.ImportDecision.Rejections.Any(rejection => rejection.Reason == ImportRejectionReason.MultiSeason));
+
+            Mocker.GetMock<IMakeImportDecision>()
+                .Verify(c => c.GetImportDecisions(It.IsAny<List<string>>(), It.IsAny<Series>(), It.IsAny<DownloadClientItem>(), It.IsAny<ParsedEpisodeInfo>(), It.IsAny<ParsedEpisodeInfo>(), true),
+                    Times.Once());
+        }
+
         private void VerifyNoImport()
         {
             Mocker.GetMock<IImportApprovedEpisodes>().Verify(c => c.Import(It.IsAny<List<ImportDecision>>(), true, null, ImportMode.Auto),

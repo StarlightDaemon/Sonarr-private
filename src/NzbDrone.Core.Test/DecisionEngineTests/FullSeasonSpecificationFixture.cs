@@ -73,5 +73,19 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
             _remoteEpisode.Episodes.Last().AirDateUtc = null;
             Subject.IsSatisfiedBy(_remoteEpisode, new()).Accepted.Should().BeFalse();
         }
+
+        [Test]
+        public void should_return_false_if_multi_season_release_has_unaired_episode_in_any_mapped_season()
+        {
+            // A complete-series pack maps episodes from all seasons; one unaired episode in the
+            // newest season must still reject the whole pack.
+            _remoteEpisode.ParsedEpisodeInfo.IsMultiSeason = true;
+            _remoteEpisode.ParsedEpisodeInfo.IsCompleteSeries = true;
+            _remoteEpisode.Episodes.First().SeasonNumber = 1;
+            _remoteEpisode.Episodes.Last().SeasonNumber = 2;
+            _remoteEpisode.Episodes.Last().AirDateUtc = DateTime.UtcNow.AddDays(+2);
+
+            Subject.IsSatisfiedBy(_remoteEpisode, new()).Accepted.Should().BeFalse();
+        }
     }
 }
