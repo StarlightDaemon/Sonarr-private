@@ -323,5 +323,45 @@ namespace NzbDrone.Core.Test.DecisionEngineTests.RssSync
             decision.Accepted.Should().BeFalse();
             decision.Reason.Should().Be(DownloadRejectionReason.HistoryNotUpgrade);
         }
+
+        [Test]
+        public void should_apply_season_pack_upgrade_mode_for_multi_season_pack()
+        {
+            _parseResultMulti.ParsedEpisodeInfo.IsMultiSeason = true;
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.SeasonPackUpgrade)
+                  .Returns(SeasonPackUpgradeType.Any);
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.SeasonPackUpgradeThreshold)
+                  .Returns(100.0);
+
+            // One of three episodes has a blocking grab event; mode is Any so
+            // at least one upgradable episode is sufficient — should Accept.
+            GivenMostRecentForEpisode(FIRST_EPISODE_ID, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+
+            _upgradeHistory.IsSatisfiedBy(_parseResultMulti, new()).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_apply_season_pack_upgrade_mode_for_complete_series_pack()
+        {
+            _parseResultMulti.ParsedEpisodeInfo.IsCompleteSeries = true;
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.SeasonPackUpgrade)
+                  .Returns(SeasonPackUpgradeType.Any);
+
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.SeasonPackUpgradeThreshold)
+                  .Returns(100.0);
+
+            // One of three episodes has a blocking grab event; mode is Any so
+            // at least one upgradable episode is sufficient — should Accept.
+            GivenMostRecentForEpisode(FIRST_EPISODE_ID, string.Empty, _notupgradableQuality, DateTime.UtcNow, EpisodeHistoryEventType.Grabbed);
+
+            _upgradeHistory.IsSatisfiedBy(_parseResultMulti, new()).Accepted.Should().BeTrue();
+        }
     }
 }
