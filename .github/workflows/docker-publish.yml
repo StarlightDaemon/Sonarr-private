@@ -30,7 +30,7 @@ jobs:
           global-json-file: global.json
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
 
@@ -55,8 +55,9 @@ jobs:
           dotnet publish src/NzbDrone.Console/Sonarr.Console.csproj
           --configuration Release
           --runtime linux-x64
+          --framework net10.0
           --self-contained false
-          --output ./publish
+          -o ./publish
 
       # Sonarr serves the web UI from ./UI relative to the binary, so the
       # compiled UI must be staged alongside the published backend.
