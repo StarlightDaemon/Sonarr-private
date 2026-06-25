@@ -1,3 +1,27 @@
+<!-- FORK-SPECIFIC SECTION — preserve during rebases -->
+## Fork: Complete-Series Pack Support
+
+This fork adds native complete-series and multi-season pack support to Sonarr. The key additions are: an `AllowMultiSeasonPacks` config flag that lets releases with `IsMultiSeason=true` pass through to `UpgradeDiskSpecification` instead of being hard-rejected, and `IsCompleteSeries` detection in the parser for keywords such as INTEGRAL, Complete Series, and Complete Collection.
+
+**Backend build** (requires .NET SDK 10.0.301 or later, pinned in `global.json`):
+```
+dotnet build src/Sonarr.sln
+```
+
+**Frontend build** (requires Node 20.x per volta pin in `package.json`):
+```
+yarn install
+yarn build
+```
+
+**Run:**
+```
+dotnet run --project src/NzbDrone.Console/NzbDrone.Console.csproj
+```
+
+**Config:** `AllowMultiSeasonPacks` is in Settings > Media Management on both the V3 and V5 API surfaces.
+<!-- END FORK-SPECIFIC SECTION -->
+
 # <img width="24px" src="./Logo/256.png" alt="Sonarr"></img> Sonarr
 
 [![Translated](https://translate.servarr.com/widget/servarr/sonarr/svg-badge.svg)](https://translate.servarr.com/engage/servarr/)

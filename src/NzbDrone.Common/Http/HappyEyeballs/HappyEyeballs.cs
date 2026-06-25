@@ -12,6 +12,7 @@ namespace NzbDrone.Common.Http.HappyEyeballs;
 Until .NET implements Happy Eyeballs natively, use third-party implementation from
 https://slugcat.systems/post/24-06-16-ipv6-is-hard-happy-eyeballs-dotnet-httpclient/#the-implementation
 This issue is being tracked at https://github.com/dotnet/runtime/issues/26177.
+Note: the source post does not carry an explicit open-source license.
 
 Below is a slightly modified Happy Eyeballs implementation from the post above.
 We’ve factored out HTTP-specific implementation into HttpHappyEyeballs class to
