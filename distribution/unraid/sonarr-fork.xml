@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Sonarr-Fork</Name>
+  <Repository>ghcr.io/starlightdaemon/sonarr-private:latest</Repository>
+  <Registry>https://github.com/StarlightDaemon/Sonarr-private/pkgs/container/sonarr-private</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/StarlightDaemon/Sonarr-private/issues</Support>
+  <Project>https://github.com/StarlightDaemon/Sonarr-private</Project>
+  <Overview>Sonarr fork with complete-series and multi-season pack support. Runs on port 8990 to avoid conflict with mainline Sonarr on 8989. Branch: feature/complete-series-pack-support.</Overview>
+  <Category>MediaApp:Video Downloaders:Usenet Downloaders:Usenet</Category>
+  <WebUI>http://[IP]:[PORT:8990]/</WebUI>
+  <TemplateURL/>
+  <Icon>https://raw.githubusercontent.com/Sonarr/Sonarr/v5-develop/Logo/128.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+  <Description>Sonarr fork with complete-series and multi-season pack support. Runs on port 8990 to avoid conflict with mainline Sonarr on 8989. Branch: feature/complete-series-pack-support.</Description>
+  <Config Name="WebUI Port" Target="8989" Default="8990" Mode="tcp" Description="Host port for the Sonarr web interface. Mapped to container port 8989. Defaults to 8990 to avoid clashing with mainline Sonarr on 8989." Type="Port" Display="always" Required="true" Mask="false">8990</Config>
+  <Config Name="Config" Target="/config" Default="/mnt/user/appdata/sonarr-fork" Mode="rw" Description="Sonarr configuration, database, and logs. Adjust before deploying if needed." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/sonarr-fork</Config>
+  <Config Name="TV Library" Target="/tv" Default="/mnt/user/data/media/tv" Mode="rw" Description="TV series library. Adjust to your media share before deploying." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/data/media/tv</Config>
+  <Config Name="Downloads" Target="/downloads" Default="/mnt/user/data/downloads" Mode="rw" Description="Download client completed folder. Adjust to your downloads share before deploying." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/data/downloads</Config>
+  <Config Name="PUID" Target="PUID" Default="1000" Mode="" Description="User ID the container files are owned by. Match to your Unraid user (default 1000)." Type="Variable" Display="always" Required="true" Mask="false">1000</Config>
+  <Config Name="PGID" Target="PGID" Default="1000" Mode="" Description="Group ID the container files are owned by. Match to your Unraid user (default 1000)." Type="Variable" Display="always" Required="true" Mask="false">1000</Config>
+  <Config Name="TZ" Target="TZ" Default="America/Denver" Mode="" Description="Container timezone, e.g. America/Denver." Type="Variable" Display="always" Required="true" Mask="false">America/Denver</Config>
+</Container>

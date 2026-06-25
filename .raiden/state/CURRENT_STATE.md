@@ -32,10 +32,36 @@ NuGet license inventory complete (.audits/nuget-licenses.md).
 Remaining findings are upstream responsibility or explicitly deferred.
 See OPEN_LOOPS.md.
 
+## Docker packaging
+
+GHCR publishing path is in place for homelab deployment:
+
+- Runtime Dockerfile: distribution/docker-runtime/Dockerfile — single-stage
+  image on mcr.microsoft.com/dotnet/aspnet:10.0-noble. (.NET 10 ships no
+  bookworm/slim aspnet tag; noble is the GA, apt-based, glibc Debian-family
+  substitute.) Non-root sonarr user at 1000:1000, entrypoint
+  `dotnet Sonarr.dll -nobrowser -data=/config`, web UI served from /app/UI.
+- Publish workflow: .github/workflows/docker-publish.yml — on push to
+  feature/complete-series-pack-support, builds the frontend, publishes the
+  backend (linux-x64, framework-dependent) to ./publish, stages _output/UI
+  into ./publish/UI, then builds and pushes
+  ghcr.io/starlightdaemon/sonarr-private :latest and
+  :feature-complete-series-pack-support.
+- Unraid template: distribution/unraid/sonarr-fork.xml — CA-compatible,
+  host port 8990 -> container 8989, /config /tv /downloads volumes,
+  PUID/PGID/TZ env, all fields Display=always / Required=true.
+
+First-push gate: the GHCR package defaults to private on a private repo and
+must be made public (or Unraid given registry creds) before it can be pulled
+— tracked as OL-005.
+
 ## Next actions
 
-1. Homelab deployment and smoke testing (next immediate step)
-2. Upstream rebase — after production smoke testing confirms feature works
-3. Squash 82c3ce1b4 and 0a6976144 into one commit — after production validation
-4. Fork CI (build_fork.yml) — when rebase cadence warrants it
-5. FFprobeStatic LGPL attribution — before any public distribution
+1. Homelab deployment via GHCR pull (next immediate step) — push the branch
+   to trigger docker-publish.yml, resolve OL-005 (package visibility), then
+   deploy the Unraid template and smoke test.
+2. Upstream rebase — gated on smoke test passing.
+3. Squash 82c3ce1b4 and 0a6976144 into one commit — gated on smoke test
+   passing / production validation.
+4. Fork CI (build_fork.yml) — when rebase cadence warrants it.
+5. FFprobeStatic LGPL attribution — before any public distribution.
