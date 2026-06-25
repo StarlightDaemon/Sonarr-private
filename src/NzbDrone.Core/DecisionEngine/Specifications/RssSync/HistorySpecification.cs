@@ -48,7 +48,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications.RssSync
 
             _logger.Debug("Performing history status check on report");
 
-            if (subject.ParsedEpisodeInfo.FullSeason)
+            if (subject.ParsedEpisodeInfo.FullSeason ||
+                subject.ParsedEpisodeInfo.IsMultiSeason ||
+                subject.ParsedEpisodeInfo.IsCompleteSeries)
             {
                 // For season packs apply the same SeasonPackUpgrade criteria as UpgradeDiskSpecification
                 // instead of rejecting on the first blocking episode, so that a pack the disk

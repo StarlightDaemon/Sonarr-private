@@ -31,7 +31,9 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
         {
             var qualityProfile = subject.Series.QualityProfile.Value;
 
-            if (subject.ParsedEpisodeInfo.FullSeason)
+            if (subject.ParsedEpisodeInfo.FullSeason ||
+                subject.ParsedEpisodeInfo.IsMultiSeason ||
+                subject.ParsedEpisodeInfo.IsCompleteSeries)
             {
                 var totalEpisodesInPack = subject.Episodes.Count;
 

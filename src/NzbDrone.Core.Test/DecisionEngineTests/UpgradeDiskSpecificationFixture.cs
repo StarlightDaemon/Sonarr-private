@@ -695,5 +695,43 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
 
             result.Accepted.Should().BeTrue();
         }
+
+        [Test]
+        public void should_route_multi_season_pack_through_season_pack_logic()
+        {
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.SeasonPackUpgrade)
+                  .Returns(SeasonPackUpgradeType.Any);
+
+            _parseResultMulti.ParsedEpisodeInfo.IsMultiSeason = true;
+            _parseResultMulti.Episodes = new List<Episode>
+                                         {
+                                             new Episode { EpisodeFile = null, EpisodeFileId = 0 },
+                                             new Episode { EpisodeFile = null, EpisodeFileId = 0 }
+                                         };
+
+            var result = Subject.IsSatisfiedBy(_parseResultMulti, new());
+
+            result.Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_route_complete_series_pack_through_season_pack_logic()
+        {
+            Mocker.GetMock<IConfigService>()
+                  .SetupGet(s => s.SeasonPackUpgrade)
+                  .Returns(SeasonPackUpgradeType.Any);
+
+            _parseResultMulti.ParsedEpisodeInfo.IsCompleteSeries = true;
+            _parseResultMulti.Episodes = new List<Episode>
+                                         {
+                                             new Episode { EpisodeFile = null, EpisodeFileId = 0 },
+                                             new Episode { EpisodeFile = null, EpisodeFileId = 0 }
+                                         };
+
+            var result = Subject.IsSatisfiedBy(_parseResultMulti, new());
+
+            result.Accepted.Should().BeTrue();
+        }
     }
 }
