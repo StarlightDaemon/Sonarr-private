@@ -49,10 +49,10 @@ jobs:
           yarn build --env production
 
       - name: Build solution
-        run: dotnet build src/Sonarr.sln --configuration Release --runtime linux-x64
+        run: dotnet build src/Sonarr.sln --configuration Release
 
       - name: Publish
-        run: dotnet publish src/NzbDrone.Console/Sonarr.Console.csproj --configuration Release --runtime linux-x64 --framework net10.0 --self-contained false -o ./publish --no-build
+        run: dotnet publish src/NzbDrone.Console/Sonarr.Console.csproj --configuration Release --runtime linux-x64 --framework net10.0 --self-contained false -o ./publish -p:RunAnalyzers=false
 
       # Sonarr serves the web UI from ./UI relative to the binary, so the
       # compiled UI must be staged alongside the published backend.
