@@ -74,9 +74,19 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
         {
             Mocker.GetMock<IConfigService>().Setup(s => s.AllowMultiSeasonPacks).Returns(true);
 
+            _remoteEpisode.ParsedEpisodeInfo.IsMultiSeason = false;
             _remoteEpisode.ParsedEpisodeInfo.IsCompleteSeries = true;
 
             Subject.IsSatisfiedBy(_remoteEpisode, new()).Accepted.Should().BeTrue();
+        }
+
+        [Test]
+        public void should_return_false_for_complete_series_release_when_multi_season_packs_are_not_allowed()
+        {
+            Mocker.GetMock<IConfigService>().Setup(s => s.AllowMultiSeasonPacks).Returns(false);
+            _remoteEpisode.ParsedEpisodeInfo.IsMultiSeason = false;
+            _remoteEpisode.ParsedEpisodeInfo.IsCompleteSeries = true;
+            Subject.IsSatisfiedBy(_remoteEpisode, new()).Accepted.Should().BeFalse();
         }
     }
 }
