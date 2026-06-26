@@ -1,3 +1,13 @@
+> [!WARNING]
+> **This is a private, experimental fork of [Sonarr](https://github.com/Sonarr/Sonarr) maintained by [@StarlightDaemon](https://github.com/StarlightDaemon) for personal homelab use.**
+>
+> This repository is in active development and is not suitable for production
+> use. It is unsupported, carries no stability guarantees, and is not intended
+> for public consumption. Do not fork, clone, or attempt to deploy this
+> repository. No issues or pull requests will be reviewed.
+>
+> For the production Sonarr application, see the [official Sonarr repository](https://github.com/Sonarr/Sonarr).
+
 <!-- FORK-SPECIFIC SECTION — preserve during rebases -->
 ## Fork: Complete-Series Pack Support
 
