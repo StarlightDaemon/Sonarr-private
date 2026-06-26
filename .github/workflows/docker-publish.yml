@@ -48,16 +48,22 @@ jobs:
           yarn install
           yarn build --env production
 
-      - name: Build solution
-        run: dotnet build src/Sonarr.sln --configuration Release
+      - name: Build and publish backend
+        run: dotnet msbuild -restore src/Sonarr.sln -p:SelfContained=true -p:Configuration=Release -p:Platform=Posix -p:RuntimeIdentifiers=linux-x64 -p:EnableWindowsTargeting=true -t:PublishAllRids
 
-      - name: Publish
-        run: dotnet publish src/NzbDrone.Console/Sonarr.Console.csproj --configuration Release --runtime linux-x64 --framework net10.0 --self-contained false -o ./publish -p:RunAnalyzers=false
-
-      # Sonarr serves the web UI from ./UI relative to the binary, so the
-      # compiled UI must be staged alongside the published backend.
-      - name: Stage web UI into publish output
-        run: cp -r _output/UI ./publish/UI
+      # PublishAllRids emits the self-contained backend (including dynamically
+      # loaded assemblies such as Sonarr.Mono.dll) to
+      # _output/net10.0/linux-x64/publish. Stage that output plus the compiled
+      # web UI (emitted to _output/UI by the frontend build) under ./publish so
+      # the Dockerfile COPY picks everything up in one pass.
+      - name: Stage artifact
+        run: |
+          mkdir -p ./publish
+          cp -r _output/net10.0/linux-x64/publish/* ./publish/
+          rm -f ./publish/Sonarr.Windows.*
+          rm -f ./publish/ServiceInstall.*
+          rm -f ./publish/ServiceUninstall.*
+          cp -r _output/UI ./publish/UI
 
       - name: Log in to GHCR
         run: echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
