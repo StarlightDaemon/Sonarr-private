@@ -1,3 +1,5 @@
+Private homelab fork of Sonarr — complete-series and multi-season pack support. Active development, not for production use. Do not fork, clone, or deploy. 
+
 # <img width="24px" src="./Logo/256.png" alt="Sonarr"></img> Sonarr
 
 [![Translated](https://translate.servarr.com/widget/servarr/sonarr/svg-badge.svg)](https://translate.servarr.com/engage/servarr/)
