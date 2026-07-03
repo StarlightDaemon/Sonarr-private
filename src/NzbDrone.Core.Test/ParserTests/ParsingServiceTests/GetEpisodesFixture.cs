@@ -604,16 +604,33 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests
         }
 
         [Test]
-        public void should_fallback_to_season_lookup_per_season_for_multi_season_release_with_scene_numbering()
+        public void should_reject_multi_season_release_for_scene_numbered_series()
         {
             GivenSceneNumberingSeries();
             GivenFullSeason();
             _parsedEpisodeInfo.IsMultiSeason = true;
             _parsedEpisodeInfo.SeasonNumbers = new[] { 1, 2 };
 
+            // Scene offsets map per-season and cannot be applied reliably to a literal multi-season
+            // range, so no episodes are mapped and the release is rejected as unknown.
+            var result = Subject.GetEpisodes(_parsedEpisodeInfo, _series, true, null);
+
+            result.Should().BeEmpty();
+
             Mocker.GetMock<IEpisodeService>()
-                  .Setup(s => s.GetEpisodesBySceneSeason(_series.Id, It.IsAny<int>()))
-                  .Returns(new List<Episode>());
+                  .Verify(v => v.GetEpisodesBySceneSeason(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+
+            Mocker.GetMock<IEpisodeService>()
+                  .Verify(v => v.GetEpisodesBySeason(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Test]
+        public void should_use_literal_season_lookup_for_multi_season_release_for_scene_numbered_series_when_not_scene_source()
+        {
+            GivenSceneNumberingSeries();
+            GivenFullSeason();
+            _parsedEpisodeInfo.IsMultiSeason = true;
+            _parsedEpisodeInfo.SeasonNumbers = new[] { 1, 2 };
 
             Mocker.GetMock<IEpisodeService>()
                   .Setup(s => s.GetEpisodesBySeason(_series.Id, It.IsAny<int>()))
@@ -623,15 +640,12 @@ namespace NzbDrone.Core.Test.ParserTests.ParsingServiceTests
                                                                                  .Build()
                                                                                  .ToList());
 
-            var result = Subject.GetEpisodes(_parsedEpisodeInfo, _series, true, null);
+            var result = Subject.GetEpisodes(_parsedEpisodeInfo, _series, false, null);
 
             result.Should().HaveCount(4);
 
             Mocker.GetMock<IEpisodeService>()
-                  .Verify(v => v.GetEpisodesBySceneSeason(_series.Id, 1), Times.Once);
-
-            Mocker.GetMock<IEpisodeService>()
-                  .Verify(v => v.GetEpisodesBySceneSeason(_series.Id, 2), Times.Once);
+                  .Verify(v => v.GetEpisodesBySceneSeason(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
 
             Mocker.GetMock<IEpisodeService>()
                   .Verify(v => v.GetEpisodesBySeason(_series.Id, 1), Times.Once);

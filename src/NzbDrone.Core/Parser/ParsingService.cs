@@ -265,6 +265,8 @@ namespace NzbDrone.Core.Parser
                     // Complete-series pack: every non-special season of the series. Specials are
                     // excluded because complete-series releases rarely carry them and counting
                     // never-released specials would inflate the expected episode count downstream.
+                    // Resolution is by series id with no per-season lookup, so the scene-numbering
+                    // mapping used by the per-season branches below intentionally does not apply.
                     return _episodeService.GetEpisodeBySeries(series.Id)
                                           .Where(e => e.SeasonNumber > 0)
                                           .ToList();
@@ -275,6 +277,15 @@ namespace NzbDrone.Core.Parser
 
                 if (seasonNumbers.Length > 1)
                 {
+                    // Scene season-offsets map per-season, so resolving a literal multi-season range
+                    // through them can silently return the wrong episode set. Map to no episodes
+                    // instead so the release is rejected as an unknown episode.
+                    if (series.UseSceneNumbering && sceneSource)
+                    {
+                        _logger.Debug("Multi-season release cannot be reliably mapped for scene numbered series {0}, no episodes returned", series.Title);
+                        return new List<Episode>();
+                    }
+
                     var multiSeasonEpisodes = new List<Episode>();
 
                     foreach (var seasonNumber in seasonNumbers)
