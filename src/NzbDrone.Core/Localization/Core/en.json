@@ -78,7 +78,7 @@
   "AllSeriesAreHiddenByTheAppliedFilter": "All results are hidden by the applied filter",
   "AllSeriesInRootFolderHaveBeenImported": "All series in {path} have been imported",
   "AllTitles": "All Titles",
-  "AllowMultiSeasonPacksHelpText": "Allow grabbing releases that span multiple seasons (e.g. S01-S09 Complete). When disabled, multi-season releases are always rejected. Enabling this may result in very large downloads for long-running series.",
+  "AllowMultiSeasonPacksHelpText": "Allow grabbing releases that span multiple seasons (e.g. S01-S09 Complete). When disabled, multi-season releases are always rejected. If any of the series already has episodes on disk, also set Allow Season Pack Upgrades to Threshold or Any, otherwise the default of requiring every episode to be an upgrade will keep rejecting these packs. Enabling this may result in very large downloads for long-running series.",
   "AllowMultiSeasonPacksLabel": "Allow Multi-Season Packs",
   "AlreadyInYourLibrary": "Already in your library",
   "AlternateTitles": "Alternate Titles",
