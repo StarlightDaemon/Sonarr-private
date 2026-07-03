@@ -32,10 +32,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 20.11.1
 
-      # Corepack (bundled with Node 20) activates the yarn version pinned in
-      # package.json (yarn@1.22.22); npm is a fallback if corepack is absent.
+      # Matches the Node version pinned in package.json's volta.node field
+      # (20.11.1). Corepack (bundled with Node 20) activates the yarn version
+      # pinned in package.json (yarn@1.22.22); npm is a fallback if corepack
+      # is absent.
       - name: Enable Yarn
         run: |
           corepack enable || npm install -g yarn
