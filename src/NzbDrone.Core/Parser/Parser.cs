@@ -1072,7 +1072,9 @@ namespace NzbDrone.Core.Parser
                     }
                 }
 
-                // If more than 1 season was parsed set IsMultiSeason to true so it can be rejected later
+                // If more than 1 season was parsed set IsMultiSeason to true. MultiSeasonSpecification then
+                // rejects it by default, or lets it through to season-pack upgrade evaluation when the
+                // AllowMultiSeasonPacks config is enabled.
                 if (seasons.Distinct().Count() > 1)
                 {
                     result.IsMultiSeason = true;
