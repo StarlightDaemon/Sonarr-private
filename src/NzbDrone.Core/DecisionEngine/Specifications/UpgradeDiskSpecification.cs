@@ -37,12 +37,6 @@ namespace NzbDrone.Core.DecisionEngine.Specifications
             {
                 var totalEpisodesInPack = subject.Episodes.Count;
 
-                if (totalEpisodesInPack == 0)
-                {
-                    // Should not happen, but good to guard against it.
-                    return DownloadSpecDecision.Accept();
-                }
-
                 // Count missing episodes as upgradable
                 var missingEpisodesCount = subject.Episodes.Count(c => c.EpisodeFileId == 0);
                 var upgradedCount = missingEpisodesCount;

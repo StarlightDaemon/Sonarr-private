@@ -18,7 +18,9 @@ namespace NzbDrone.Core.DecisionEngine
         {
             if (totalCount == 0)
             {
-                // Should not happen, but good to guard against it.
+                // Should not happen, but good to guard against it. This is the single owner of
+                // this defensive check for both call paths (UpgradeDiskSpecification and
+                // HistorySpecification) — do not duplicate it in callers.
                 return DownloadSpecDecision.Accept();
             }
 
