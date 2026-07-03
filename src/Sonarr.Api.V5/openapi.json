@@ -8805,7 +8805,8 @@
           "diskCustomFormatScoreIncrement",
           "diskUpgradesNotAllowed",
           "diskNotUpgrade",
-          "beforeAirDate"
+          "beforeAirDate",
+          "historyNotUpgrade"
         ],
         "type": "string"
       },
@@ -10673,6 +10674,9 @@
           "seasonPackUpgradeThreshold": {
             "type": "number",
             "format": "double"
+          },
+          "allowMultiSeasonPacks": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
