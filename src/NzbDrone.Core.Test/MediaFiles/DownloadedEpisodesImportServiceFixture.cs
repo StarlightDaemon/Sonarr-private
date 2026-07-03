@@ -527,6 +527,33 @@ namespace NzbDrone.Core.Test.MediaFiles
         }
 
         [Test]
+        public void should_reject_if_download_is_complete_series()
+        {
+            GivenValidSeries();
+
+            _trackedDownload.DownloadItem.Title = "Series.Title.INTEGRAL.FRENCH.1080p.BluRay.x264-GRP";
+
+            var folderName = @"C:\media\ba09030e-1234-1234-1234-123456789abc\[HorribleSubs] Maria the Virgin Witch - 09 [720p]".AsOsAgnostic();
+
+            Mocker.GetMock<IDiskProvider>().Setup(c => c.FolderExists(folderName))
+                .Returns(true);
+
+            var result = Subject.ProcessPath(folderName, ImportMode.Auto, _trackedDownload.RemoteEpisode.Series, _trackedDownload.DownloadItem);
+
+            result.Count.Should().Be(1);
+            result.First().Result.Should().Be(ImportResultType.Rejected);
+            result.First().ImportDecision.Rejections.First().Reason.Should().Be(ImportRejectionReason.MultiSeason);
+
+            Mocker.GetMock<IParsingService>().Setup(c => c.GetSeries("foldername")).Returns((Series)null);
+
+            Mocker.GetMock<IMakeImportDecision>()
+                .Verify(c => c.GetImportDecisions(It.IsAny<List<string>>(), It.IsAny<Series>(), It.IsAny<DownloadClientItem>(), It.IsAny<ParsedEpisodeInfo>(), It.IsAny<ParsedEpisodeInfo>(), It.IsAny<bool>(), true),
+                    Times.Never());
+
+            VerifyNoImport();
+        }
+
+        [Test]
         public void should_process_multi_season_download_when_multi_season_packs_are_allowed()
         {
             GivenValidSeries();
