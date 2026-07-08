@@ -108,30 +108,37 @@ GHCR package visibility (OL-005) is RESOLVED — verified public 2026-07-02
 (anonymous registry tags/list HTTP 200; tags latest,
 feature-complete-series-pack-support). See OPEN_LOOPS.md.
 
-## Twin working copies
+## Sole working copy (twin retired in place, 2026-07-08)
 
-Two working copies of this fork exist side by side:
-- /Users/dante/Citadel/Sonarr_SD/sonarr-overnight/ (THIS copy)
-- /Users/dante/Citadel/Sonarr_SD/sonarr/           (the twin)
+This is the **only active** working copy of the fork. Operator decision
+2026-07-08: this copy (branch `temp` @ 8151cefa9, 35 commits ahead of
+upstream) is authoritative; the plain-sonarr twin
+(`/Users/dante/Citadel/Sonarr_SD/sonarr/`,
+feature/complete-series-pack-support @ 8f6c091f8, verified to hold no unique
+work) is **retired as a working surface — do not work or commit there.**
 
-As of 2026-07-08 they have **diverged**. This copy is on `temp` @ 8151cefa9,
-**35 commits ahead** of upstream. The plain-sonarr twin sits on
-feature/complete-series-pack-support @ 7fe04823f, only 15 commits ahead — the
-pre-divergence tip. `temp` shares only base commit 82c3ce1b4 with that branch;
+STRUCTURAL WARNING: this overnight copy is a **linked git worktree** whose
+object store lives inside the plain twin's directory
+(`Sonarr_SD/sonarr/.git`). The plain directory therefore CANNOT be deleted or
+moved without first promoting this copy to a standalone repository (move the
+`.git` store here, drop `.git/worktrees`, re-point HEAD to `temp`) — that
+promotion is a pending operator-approved step, not yet executed.
+
+`temp` shares only base commit 82c3ce1b4 with the old feature branch;
 everything above was rewritten, plus ~20 additional commits (CI hardening,
 Actions SHA pinning, dependency bumps, further multi-season fixes, non-root
-Dockerfile). **This overnight copy is ahead / more active.** Consolidation is
-an **open operator decision** — do not merge or delete either copy without a
-deliberate call.
+Dockerfile). Whether `temp` replaces / is renamed onto
+feature/complete-series-pack-support is decided at the next upstream rebase.
 
 ## Next actions
 
 1. Homelab deployment via GHCR pull — push the branch to trigger
    docker-publish.yml, then deploy the Unraid template and smoke test.
    (OL-005 package-visibility gate already cleared.)
-2. Operator decision: consolidate the twin copies (see Twin working copies),
-   and decide whether `temp` should be fast-forwarded onto / replace
-   feature/complete-series-pack-support before the next rebase.
+2. ~~Operator decision: consolidate the twin copies~~ — DONE 2026-07-08
+   (twin retired to Archived/; this copy is sole and authoritative). Branch
+   naming (`temp` vs feature/complete-series-pack-support) decided at the
+   next rebase.
 3. Upstream rebase — gated on smoke test passing.
 4. Squash the feature+fix commits into one — gated on production validation
    (OL-004).
