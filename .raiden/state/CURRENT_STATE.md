@@ -110,19 +110,17 @@ feature-complete-series-pack-support). See OPEN_LOOPS.md.
 
 ## Sole working copy (twin retired in place, 2026-07-08)
 
-This is the **only active** working copy of the fork. Operator decision
-2026-07-08: this copy (branch `temp` @ 8151cefa9, 35 commits ahead of
-upstream) is authoritative; the plain-sonarr twin
-(`/Users/dante/Citadel/Sonarr_SD/sonarr/`,
-feature/complete-series-pack-support @ 8f6c091f8, verified to hold no unique
-work) is **retired as a working surface — do not work or commit there.**
+This is the **only** working copy of the fork. Operator decision 2026-07-08:
+this copy (branch `temp`, 35 commits ahead of upstream) is authoritative; the
+plain-sonarr twin (feature/complete-series-pack-support @ 8f6c091f8, verified
+to hold no unique work) is retired.
 
-STRUCTURAL WARNING: this overnight copy is a **linked git worktree** whose
-object store lives inside the plain twin's directory
-(`Sonarr_SD/sonarr/.git`). The plain directory therefore CANNOT be deleted or
-moved without first promoting this copy to a standalone repository (move the
-`.git` store here, drop `.git/worktrees`, re-point HEAD to `temp`) — that
-promotion is a pending operator-approved step, not yet executed.
+WORKTREE PROMOTION COMPLETE (2026-07-08): this copy was formerly a linked git
+worktree of the plain twin. The `.git` object store was moved here, worktree
+metadata dropped, HEAD re-pointed to `temp` — this is now a **standalone
+repository** holding the full history (including the retired feature branch
+@ 8f6c091f8). The gitless file snapshot of the retired twin lives at
+`/Users/dante/Citadel/Archived/sonarr-plain-retired-2026-07-08/`.
 
 `temp` shares only base commit 82c3ce1b4 with the old feature branch;
 everything above was rewritten, plus ~20 additional commits (CI hardening,
