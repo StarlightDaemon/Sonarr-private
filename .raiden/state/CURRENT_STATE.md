@@ -1,20 +1,22 @@
 # Current State — Sonarr-private fork (overnight copy)
 
-> **Ledger reconciled 2026-07-08.** The previous ledger claimed HEAD `c72ff6849`
-> with a 7-commit patch series on feature/complete-series-pack-support; that was
-> badly stale. This copy is actually checked out on the `temp` branch. Verified
-> reality below.
+> **State normalized 2026-07-09** for ledger-form RAIDEN Instance enrollment
+> (Raiden-ops:OPS-D-002). The 2026-07-08 reconcile pass itself went stale by
+> three commits (its own commit plus two follow-ons); HEAD and the ahead-count
+> below are corrected against actual repo state as of this pass.
 
 **Branch:** temp (checked out HEAD)
-**HEAD:** 8151cefa9 (Maint: bump contained-major frontend deps (FG2) —
-2026-07-02)
-**Also present:** feature/complete-series-pack-support @ 7fe04823f (15 commits
-ahead of upstream — the pre-divergence tip, identical to the plain sonarr twin)
+**HEAD:** 3d4035c2f (chore: record worktree promotion to standalone repo —
+consolidation complete — 2026-07-08)
+**Also present:** feature/complete-series-pack-support @ 8f6c091f8 (16 commits
+ahead of upstream — retired branch kept for provenance; see sibling
+Sonarr_SD/CLAUDE.md for the retirement note. It picked up one more commit
+than previously recorded here before retirement.)
 **Base:** upstream/v5-develop (Sonarr/Sonarr)
 **Strategy:** Scenario C — long-term maintained patch-series fork with
 periodic upstream rebases
 
-## Patch series — `temp` (35 commits ahead of upstream)
+## Patch series — `temp` (commits ahead of upstream/v5-develop; dated count in WORK_LOG.md)
 
 `temp` shares only base commit 82c3ce1b4 with feature/complete-series-pack-support;
 every commit above it was rewritten/rebased, then ~20 further commits were added.
@@ -54,9 +56,11 @@ every commit above it was rewritten/rebased, then ~20 further commits were added
 - d1de12e3a Maint: bump Selenium.Support 3.141.0 -> 4.45.0, ChromeDriver 134.x -> 150.0.7871.4600
 - 00adcbfce Maint: bump same-major frontend deps (FG1)
 - 8151cefa9 Maint: bump contained-major frontend deps (FG2)
-
-(Reconciliation note 2026-07-08: the next state-reconcile commit adds a 36th
-commit to `temp`.)
+- a57852e6d Chore: reconcile RAIDEN ledger with actual repo state (2026-07-08)
+- 905c5a27c Chore: record twin retirement (in place) and worktree structural
+  warning
+- 3d4035c2f Chore: record worktree promotion to standalone repo —
+  consolidation complete
 
 ## Feature status
 
